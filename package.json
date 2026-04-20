@@ -1,0 +1,69 @@
+{
+  "name": "portman",
+  "version": "0.2.0",
+  "description": "Retro CRT-styled Windows dispatcher for localhost dev servers — see what's listening, what's idle, kill duplicates, auto-clean stale dev servers. One-click desktop launcher.",
+  "bin": {
+    "portman": "bin/portman.js"
+  },
+  "scripts": {
+    "ui": "node bin/portman.js ui",
+    "ps": "node bin/portman.js ps",
+    "kill": "node bin/portman.js kill",
+    "run": "node bin/portman.js run",
+    "auto": "node bin/portman.js auto",
+    "start": "node bin/portman.js ui"
+  },
+  "keywords": [
+    "windows",
+    "dev-server",
+    "localhost",
+    "ports",
+    "port-manager",
+    "process-manager",
+    "netstat",
+    "dispatcher",
+    "task-manager",
+    "kill-process",
+    "node",
+    "vite",
+    "next",
+    "astro",
+    "developer-tools",
+    "devtools",
+    "cli",
+    "retro",
+    "crt",
+    "tui",
+    "system-utility",
+    "windows-tool",
+    "auto-cleanup",
+    "idle-killer"
+  ],
+  "author": {
+    "name": "Alexander Nemirov",
+    "email": "aleuphoria@gmail.com",
+    "url": "https://github.com/al-nemirov"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/al-nemirov/portman#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/al-nemirov/portman.git"
+  },
+  "bugs": {
+    "url": "https://github.com/al-nemirov/portman/issues"
+  },
+  "os": ["win32"],
+  "type": "commonjs",
+  "engines": { "node": ">=18" },
+  "files": [
+    "bin",
+    "lib",
+    "web",
+    "portman.bat",
+    "portman-silent.vbs",
+    "install-shortcut.bat",
+    "README.md",
+    "LICENSE"
+  ]
+}
