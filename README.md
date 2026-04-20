@@ -1,8 +1,14 @@
-# PORTMAN
+<p align="center">
+  <img src="logo.png" alt="PORTMAN" width="180">
+</p>
 
-> Retro CRT-styled Windows dispatcher for localhost dev servers.
-> See what's listening, what's idle, kill duplicates, auto-clean stale dev servers.
-> One-click desktop launcher.
+<h1 align="center">PORTMAN</h1>
+
+<p align="center">
+  Retro CRT-styled Windows dispatcher for localhost dev servers.<br>
+  See what's listening, what's idle, kill duplicates, auto-clean stale dev servers.<br>
+  One-click desktop launcher.
+</p>
 
 [![Platform](https://img.shields.io/badge/platform-Windows-0a84ff)](https://github.com/al-nemirov/portman)
 [![Node](https://img.shields.io/badge/node-%3E%3D18-339933)](https://nodejs.org)
