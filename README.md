@@ -5,9 +5,16 @@
 <h1 align="center">PORTMAN</h1>
 
 <p align="center">
+  <b>English</b> ·
+  <a href="README.ko.md">한국어</a> ·
+  <a href="README.de.md">Deutsch</a> ·
+  <a href="README.es.md">Español</a>
+</p>
+
+<p align="center">
   Retro CRT-styled Windows dispatcher for localhost dev servers.<br>
   See what's listening, what's idle, kill duplicates, auto-clean stale dev servers.<br>
-  One-click desktop launcher.
+  One-click desktop launcher. UI in EN / KO / DE / ES.
 </p>
 
 [![Platform](https://img.shields.io/badge/platform-Windows-0a84ff)](https://github.com/al-nemirov/portman)
