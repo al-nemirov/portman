@@ -11,7 +11,16 @@
     "kill": "node bin/portman.js kill",
     "run": "node bin/portman.js run",
     "auto": "node bin/portman.js auto",
-    "start": "node bin/portman.js ui"
+    "start": "node bin/portman.js ui",
+    "build": "pkg . --targets node18-win-x64 --output dist/portman.exe --compress GZip"
+  },
+  "devDependencies": {
+    "@yao-pkg/pkg": "^6.7.0"
+  },
+  "pkg": {
+    "scripts": ["bin/**/*.js", "lib/**/*.js"],
+    "assets": ["web/**/*", "logo.png", "favicon.png"],
+    "outputPath": "dist"
   },
   "keywords": [
     "windows",

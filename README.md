@@ -80,18 +80,32 @@ Legend:
 - **Windows 10 or 11**
 - **Node.js ≥ 18** ([nodejs.org](https://nodejs.org))
 
-### Get the code
+### Option A — single .exe (no Node.js required)
+Download **`portman.exe`** from the [latest release](https://github.com/al-nemirov/portman/releases/latest)
+and put it anywhere (e.g. `C:\Tools\portman.exe`). Done. No install. Run with:
+```powershell
+portman.exe ui
+```
+
+### Option B — from source (needs Node ≥18)
 ```powershell
 git clone https://github.com/al-nemirov/portman.git C:\Tools\portman
 cd C:\Tools\portman
+node bin/portman.js ui
 ```
-(no `npm install` needed — zero dependencies)
+(no `npm install` needed at runtime — zero runtime dependencies)
 
-### Make it global (optional)
+### Make it global (optional, source install)
 ```powershell
 npm link
 ```
 After this you can type `portman` from anywhere.
+
+### Build the .exe yourself
+```powershell
+npm install        # installs @yao-pkg/pkg as devDep
+npm run build      # → dist/portman.exe (~41 MB, single file, no Node needed)
+```
 
 ---
 

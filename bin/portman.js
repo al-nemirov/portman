@@ -1,14 +1,9 @@
 #!/usr/bin/env node
 // Единый CLI portman: ui | ps | kill | run | auto
 const { execSync } = require('child_process');
-const path = require('path');
 
 const sub = process.argv[2];
 const rest = process.argv.slice(3);
-
-function exec(file) {
-  require(path.join(__dirname, file));
-}
 
 switch (sub) {
   case 'ui': {
@@ -21,20 +16,20 @@ switch (sub) {
     }
     break;
   }
-  case 'ps':   process.argv = [process.argv[0], 'devps', ...rest];   exec('devps.js'); break;
-  case 'kill': process.argv = [process.argv[0], 'devkill', ...rest]; exec('devkill.js'); break;
-  case 'run':  process.argv = [process.argv[0], 'devrun', ...rest];  exec('devrun.js'); break;
-  case 'auto': process.argv = [process.argv[0], 'devauto', ...rest]; exec('devauto.js'); break;
+  case 'ps':   process.argv = [process.argv[0], 'devps',   ...rest]; require('./devps.js');   break;
+  case 'kill': process.argv = [process.argv[0], 'devkill', ...rest]; require('./devkill.js'); break;
+  case 'run':  process.argv = [process.argv[0], 'devrun',  ...rest]; require('./devrun.js');  break;
+  case 'auto': process.argv = [process.argv[0], 'devauto', ...rest]; require('./devauto.js'); break;
   default:
-    console.log(`portman — диспетчер локальных портов
+    console.log(`portman — localhost port dispatcher
 
-Использование:
-  portman ui [--port=9876] [--no-open]   запустить web-UI и открыть в браузере
-  portman ps                              список процессов
-  portman kill <pid|:port|idle|all>      убить
-  portman run [--label=NAME] [--port=N] -- <cmd>  запуск с регистрацией
-  portman auto [--interval=60] [--idle=360]       фоновый watcher (CLI)
+Usage:
+  portman ui [--port=9876] [--no-open]   start web UI and open browser
+  portman ps                              list processes
+  portman kill <pid|:port|idle|all>       kill
+  portman run [--label=NAME] [--port=N] -- <cmd>   start with registration
+  portman auto [--interval=60] [--idle=360]        background watcher (CLI)
 
-Web-UI на http://127.0.0.1:9876 — авто-режим, фильтр по диапазону портов,
-кнопки "убить" и "прогнать сейчас".`);
+Web UI at http://127.0.0.1:9876 — auto mode, port-range filter,
+"kill" and "sweep now" buttons.`);
 }
