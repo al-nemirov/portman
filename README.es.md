@@ -45,6 +45,12 @@ es qué proyecto.
 - Un comando wrapper `portman run -- npm run dev` registra tu servidor de
   desarrollo con una etiqueta y **mata automáticamente la instancia anterior**
   del mismo proyecto cuando inicias una nueva.
+- **RAM y CPU en vivo por proceso** — ordena por RAM ↓ para encontrar el
+  servidor de desarrollo que está secretamente comiendo 2 GB.
+- **Enlaces `localhost:PORT` clicables** — abre cualquier servidor de desarrollo
+  en una nueva pestaña directamente desde la tabla.
+- **Chips de filtro** (ALL / DEV / ACTIVE / IDLE / PROTECTED) y **búsqueda
+  instantánea** por PID / nombre / puerto / etiqueta / comando.
 
 ## Capturas de pantalla
 

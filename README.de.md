@@ -44,6 +44,12 @@ er zeigt zehn Mal `node.exe` ohne Hinweis darauf, welcher zu welchem Projekt geh
 - Der Wrapper-Befehl `portman run -- npm run dev` registriert deinen Dev-Server
   mit einem Label und **tötet die vorherige Instanz desselben Projekts automatisch**
   beim Start einer neuen.
+- **Live-RAM und -CPU pro Prozess** — sortiere nach RAM ↓, um den Dev-Server
+  zu finden, der heimlich 2 GB frisst.
+- **Klickbare `localhost:PORT`-Links** — öffne jeden Dev-Server in einem neuen Tab
+  direkt aus der Tabelle.
+- **Filter-Chips** (ALL / DEV / ACTIVE / IDLE / PROTECTED) und **Sofort-Suche**
+  nach PID / Name / Port / Label / Befehl.
 
 ## Screenshots
 

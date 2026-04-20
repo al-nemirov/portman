@@ -382,16 +382,16 @@
 
 <div class="filterbar">
   <div class="filters">
-    <button class="fchip active" data-f="all">ALL</button>
+    <button class="fchip" data-f="all">ALL</button>
     <button class="fchip" data-f="dev">DEV</button>
     <button class="fchip" data-f="active">ACTIVE</button>
     <button class="fchip" data-f="idle">IDLE</button>
     <button class="fchip" data-f="prot">PROTECTED</button>
   </div>
-  <input type="text" class="search" id="search" placeholder="🔍  filter by name, port, label, cmd...">
+  <input type="text" class="search" id="search" placeholder="🔍  filter by name, port, label, cmd..." aria-label="search">
   <div class="sort">
-    <span>SORT:</span>
-    <select id="sortBy">
+    <span id="sortLbl">SORT:</span>
+    <select id="sortBy" aria-label="sort by">
       <option value="auto">DEFAULT</option>
       <option value="ram">RAM ↓</option>
       <option value="cpu">CPU ↓</option>
@@ -697,17 +697,13 @@ $('saveBtn').onclick = async () => {
 $('mCancel').onclick = () => $('modal').classList.remove('show');
 $('lang').onchange = e => { lang = e.target.value; localStorage.setItem('portman-lang', lang); applyLang(); refresh(); };
 
-document.querySelectorAll('.fchip').forEach(b => {
-  b.onclick = () => {
-    document.querySelectorAll('.fchip').forEach(x => x.classList.remove('active'));
-    b.classList.add('active');
-    filter = b.dataset.f;
-    localStorage.setItem('portman-filter', filter);
-    refresh();
-  };
-});
-document.querySelector(`.fchip[data-f="${filter}"]`)?.classList.add('active');
-document.querySelector('.fchip[data-f="all"]').classList.toggle('active', filter === 'all');
+function setActiveFilter(f) {
+  filter = f;
+  localStorage.setItem('portman-filter', filter);
+  document.querySelectorAll('.fchip').forEach(x => x.classList.toggle('active', x.dataset.f === f));
+}
+document.querySelectorAll('.fchip').forEach(b => { b.onclick = () => { setActiveFilter(b.dataset.f); refresh(); }; });
+setActiveFilter(filter);
 
 $('search').oninput = e => { search = e.target.value.trim(); refresh(); };
 $('sortBy').value = sortBy;

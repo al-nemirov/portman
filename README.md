@@ -44,6 +44,12 @@ help — it shows `node.exe` ten times with no clue which one is which project.
 - A wrapper command `portman run -- npm run dev` registers your dev server with
   a label, and **automatically kills the previous instance** of the same project
   when you start a new one.
+- **Live RAM and CPU per process** — sort by RAM ↓ to find the dev server
+  that's secretly eating 2 GB.
+- **Clickable `localhost:PORT` links** — open any dev server in a new tab
+  straight from the table.
+- **Filter chips** (ALL / DEV / ACTIVE / IDLE / PROTECTED) and **instant search**
+  by PID / name / port / label / command.
 
 ## Screenshots
 
