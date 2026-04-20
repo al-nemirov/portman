@@ -142,6 +142,57 @@
   }
   .cog:hover { background: rgba(0, 240, 255, 0.15); }
 
+  /* Filterbar */
+  .filterbar {
+    position: relative; z-index: 5;
+    display: flex; align-items: center; gap: 16px;
+    padding: 14px 28px;
+    background: rgba(20, 8, 50, 0.6);
+    border-bottom: 1px solid rgba(255, 45, 181, 0.3);
+    flex-wrap: wrap;
+  }
+  .filters { display: flex; gap: 6px; }
+  .fchip {
+    background: transparent; color: var(--text-dim);
+    border: 1px solid var(--purple); padding: 6px 14px;
+    font: inherit; font-size: 11px; letter-spacing: 0.18em; font-weight: bold;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .fchip:hover { color: var(--cyan); border-color: var(--cyan); }
+  .fchip.active {
+    background: linear-gradient(180deg, var(--magenta), var(--purple));
+    color: #fff; border-color: var(--cyan);
+    box-shadow: 0 0 12px var(--magenta);
+    text-shadow: 0 0 6px #fff;
+  }
+  .search {
+    flex: 1; min-width: 200px;
+    background: rgba(0,0,0,0.4); color: var(--text);
+    border: 1px solid var(--purple); padding: 8px 12px; font: inherit;
+    box-shadow: inset 0 0 6px rgba(176, 38, 255, 0.2);
+  }
+  .search:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
+  .sort { display: flex; align-items: center; gap: 8px; color: var(--text-dim); font-size: 11px; letter-spacing: 0.2em; }
+  .sort select {
+    background: rgba(0,0,0,0.4); color: var(--cyan);
+    border: 1px solid var(--cyan); padding: 6px 8px; font: inherit; font-size: 11px;
+    letter-spacing: 0.15em; cursor: pointer;
+  }
+  .sort select option { background: var(--bg-deep); color: var(--text); }
+
+  .num { width: 80px; text-align: right; font-family: monospace; }
+  .url-link {
+    color: var(--cyan); text-decoration: none;
+    text-shadow: 0 0 4px var(--cyan); font-size: 12px;
+    border-bottom: 1px dotted var(--cyan); padding-bottom: 1px;
+  }
+  .url-link:hover { color: #fff; text-shadow: 0 0 10px var(--cyan); }
+  .ram { color: var(--cyan); }
+  .ram.high { color: var(--yellow); text-shadow: 0 0 6px var(--yellow); }
+  .ram.huge { color: var(--red); text-shadow: 0 0 6px var(--red); font-weight: bold; }
+  .cpu { color: var(--text-dim); }
+  .cpu.busy { color: var(--magenta); text-shadow: 0 0 6px var(--magenta); font-weight: bold; }
+
   /* Таблица */
   main {
     position: relative; z-index: 5;
@@ -329,14 +380,38 @@
   </div>
 </header>
 
+<div class="filterbar">
+  <div class="filters">
+    <button class="fchip active" data-f="all">ALL</button>
+    <button class="fchip" data-f="dev">DEV</button>
+    <button class="fchip" data-f="active">ACTIVE</button>
+    <button class="fchip" data-f="idle">IDLE</button>
+    <button class="fchip" data-f="prot">PROTECTED</button>
+  </div>
+  <input type="text" class="search" id="search" placeholder="🔍  filter by name, port, label, cmd...">
+  <div class="sort">
+    <span>SORT:</span>
+    <select id="sortBy">
+      <option value="auto">DEFAULT</option>
+      <option value="ram">RAM ↓</option>
+      <option value="cpu">CPU ↓</option>
+      <option value="port">PORT ↑</option>
+      <option value="age">AGE ↓</option>
+      <option value="idle">IDLE ↓</option>
+    </select>
+  </div>
+</div>
+
 <main>
   <table>
     <thead>
       <tr>
-        <th style="width: 90px">PID</th>
+        <th style="width: 80px">PID</th>
         <th id="thName">NAME</th>
-        <th style="width: 160px" id="thPorts">PORTS</th>
-        <th class="conn" id="thConn">CONN</th>
+        <th style="width: 200px" id="thUrls">URL · PORTS</th>
+        <th class="num" id="thConn">CONN</th>
+        <th class="num" id="thRam">RAM</th>
+        <th class="num" id="thCpu">CPU</th>
         <th class="status" id="thStatus">STATUS</th>
         <th class="meta" id="thAge">AGE · IDLE</th>
         <th class="act"></th>
@@ -449,15 +524,19 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp
 let lang = localStorage.getItem('portman-lang') || 'en';
 let t = I18N[lang];
 let state = { settings: null, items: [] };
+let filter = localStorage.getItem('portman-filter') || 'all';
+let sortBy = localStorage.getItem('portman-sort') || 'auto';
+let search = '';
 
 function applyLang() {
   t = I18N[lang]; document.documentElement.lang = lang; $('lang').value = lang;
   document.querySelector('[data-i18n=proc]').textContent = t.proc;
   document.querySelector('[data-i18n=idle]').textContent = t.idle;
   document.querySelector('[data-i18n=prot]').textContent = t.prot;
-  $('thName').textContent = t.thName; $('thPorts').textContent = t.thPorts;
+  $('thName').textContent = t.thName; $('thUrls').textContent = t.thPorts;
   $('thConn').textContent = t.thConn; $('thStatus').textContent = t.thStatus;
   $('thAge').textContent = t.thAge;
+  $('thRam').textContent = 'RAM'; $('thCpu').textContent = 'CPU';
   $('drawerTitle').textContent = t.drawerTitle;
   $('lblIdle').textContent = t.lblIdle; $('lblRange').textContent = t.lblRange;
   $('lblExtraNames').textContent = t.lblExtraNames; $('lblExtraPorts').textContent = t.lblExtraPorts;
@@ -488,6 +567,46 @@ function statusOf(it) {
   return { cls:'listen', label:t.stListen };
 }
 
+function fmtRam(mb) {
+  if (mb == null) return '—';
+  if (mb < 1024) return mb + ' MB';
+  return (mb / 1024).toFixed(1) + ' GB';
+}
+function ramClass(mb) {
+  if (mb == null) return '';
+  if (mb >= 1500) return 'huge';
+  if (mb >= 500) return 'high';
+  return '';
+}
+function fmtCpu(p) {
+  if (p == null) return '—';
+  return p.toFixed(p < 10 ? 1 : 0) + '%';
+}
+
+function applyFilter(items) {
+  let r = items;
+  if (filter === 'dev') r = r.filter(i => i.inDevRange && !i.protected);
+  else if (filter === 'active') r = r.filter(i => i.conn > 0 && !i.protected);
+  else if (filter === 'idle') r = r.filter(i => !i.protected && i.conn === 0 && i.idleSec > 60);
+  else if (filter === 'prot') r = r.filter(i => i.protected);
+  if (search) {
+    const q = search.toLowerCase();
+    r = r.filter(i =>
+      String(i.pid).includes(q) ||
+      (i.name||'').toLowerCase().includes(q) ||
+      (i.label||'').toLowerCase().includes(q) ||
+      (i.cmd||'').toLowerCase().includes(q) ||
+      i.ports.some(p => String(p).includes(q))
+    );
+  }
+  if (sortBy === 'ram') r = [...r].sort((a,b) => (b.ramMB||0) - (a.ramMB||0));
+  else if (sortBy === 'cpu') r = [...r].sort((a,b) => (b.cpuPct||0) - (a.cpuPct||0));
+  else if (sortBy === 'port') r = [...r].sort((a,b) => (a.ports[0]||0) - (b.ports[0]||0));
+  else if (sortBy === 'age') r = [...r].sort((a,b) => (b.ageMin||0) - (a.ageMin||0));
+  else if (sortBy === 'idle') r = [...r].sort((a,b) => (b.idleSec||0) - (a.idleSec||0));
+  return r;
+}
+
 async function refresh() {
   const snap = await api('/api/snapshot'); state = snap;
   $('cnt').textContent = snap.items.length;
@@ -497,32 +616,37 @@ async function refresh() {
   $('autoBtn').classList.toggle('on', !!snap.settings.autoEnabled);
   $('autoLabel').textContent = snap.settings.autoEnabled ? t.autoOn : t.autoOff;
 
-  if (snap.items.length === 0) { $('rows').innerHTML = ''; $('empty').style.display = 'block'; return; }
+  const items = applyFilter(snap.items);
+  if (items.length === 0) { $('rows').innerHTML = ''; $('empty').style.display = 'block'; return; }
   $('empty').style.display = 'none';
 
-  $('rows').innerHTML = snap.items.map(it => {
+  $('rows').innerHTML = items.map(it => {
     const st = statusOf(it);
-    const portsHtml = it.ports.map(p => {
+    const urlsHtml = it.ports.map((p, i) => {
       const lock = p < 1024 || (snap.settings.extraProtectedPorts||[]).includes(p);
-      return `<span class="${lock?'p-lock':''}">${p}</span>`;
-    }).join(' ');
+      const url = it.urls[i];
+      if (lock) return `<span class="ports p-lock">:${p}</span>`;
+      return `<a class="url-link" href="${esc(url)}" target="_blank" rel="noopener">localhost:${p}</a>`;
+    }).join('<br>');
     const act = it.protected
       ? `<span class="locked-label">${esc(t.btnLocked)}</span>`
       : `<button class="btn-kill" data-kill="${it.pid}">${esc(t.btnKill)}</button>`;
     const label = it.label
-      ? `<span class="label">${esc(it.label)}</span> <span class="pid">${esc(it.name)}</span>`
+      ? `<span class="label">${esc(it.label)}</span><br><span class="pid">${esc(it.name)}</span>`
       : esc(it.name);
     return `<tr class="${rowClass(it)}">
       <td><span class="pid">${it.pid}</span></td>
-      <td class="name">${label}</td>
-      <td class="ports">${portsHtml}</td>
-      <td class="conn ${it.conn>0?'high':''}">${it.conn}</td>
+      <td class="name" title="${esc(it.cmd||'')}\n${esc(it.cwd||'')}">${label}</td>
+      <td>${urlsHtml}</td>
+      <td class="num conn ${it.conn>0?'high':''}">${it.conn}</td>
+      <td class="num ram ${ramClass(it.ramMB)}">${fmtRam(it.ramMB)}</td>
+      <td class="num cpu ${(it.cpuPct||0) > 5 ? 'busy':''}">${fmtCpu(it.cpuPct)}</td>
       <td class="status ${st.cls}">${esc(st.label)}</td>
       <td class="meta">${it.ageMin!==null?it.ageMin+'m':'—'} · ${fmtIdle(it.idleSec)}</td>
       <td class="act">${act}</td>
     </tr>`;
   }).join('');
-  document.querySelectorAll('[data-kill]').forEach(b => b.onclick = () => tryKill(+b.dataset.kill));
+  document.querySelectorAll('[data-kill]').forEach(b => b.onclick = (e) => { e.preventDefault(); tryKill(+b.dataset.kill); });
 }
 
 async function tryKill(pid) {
@@ -572,6 +696,22 @@ $('saveBtn').onclick = async () => {
 };
 $('mCancel').onclick = () => $('modal').classList.remove('show');
 $('lang').onchange = e => { lang = e.target.value; localStorage.setItem('portman-lang', lang); applyLang(); refresh(); };
+
+document.querySelectorAll('.fchip').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('.fchip').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    filter = b.dataset.f;
+    localStorage.setItem('portman-filter', filter);
+    refresh();
+  };
+});
+document.querySelector(`.fchip[data-f="${filter}"]`)?.classList.add('active');
+document.querySelector('.fchip[data-f="all"]').classList.toggle('active', filter === 'all');
+
+$('search').oninput = e => { search = e.target.value.trim(); refresh(); };
+$('sortBy').value = sortBy;
+$('sortBy').onchange = e => { sortBy = e.target.value; localStorage.setItem('portman-sort', sortBy); refresh(); };
 
 applyLang(); refresh(); setInterval(refresh, 3000);
 </script>
