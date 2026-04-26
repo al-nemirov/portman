@@ -87,6 +87,8 @@ and put it anywhere (e.g. `C:\Tools\portman.exe`). Done. No install. Run with:
 portman.exe ui
 ```
 
+> **First-run SmartScreen warning?** That's normal — see [SmartScreen FAQ](#why-does-windows-warn-me-about-portmanexe) below.
+
 ### Option B — from source (needs Node ≥18)
 ```powershell
 git clone https://github.com/al-nemirov/portman.git C:\Tools\portman
@@ -291,6 +293,47 @@ No native modules. No npm dependencies. ~600 lines of plain Node.js.
 - [ ] Per-project rules (e.g. "kill `mysite` after 10 min idle, but never `bigsim`").
 
 ---
+
+## Why does Windows warn me about `portman.exe`?
+
+**TL;DR:** the binary isn't code-signed (yet), so Windows SmartScreen shows a yellow warning the first time you run it. Click **More info → Run anyway**. That's it.
+
+### Detailed explanation
+
+Microsoft's SmartScreen filter blocks any executable that:
+- isn't signed by a paid Code Signing certificate ($300–$700/year), **and**
+- doesn't yet have established "reputation" (≈ thousands of downloads with zero malware reports).
+
+`portman.exe` is open-source (MIT), built locally from this repo via `@yao-pkg/pkg`, and contains no telemetry, no auto-updater, and no network calls beyond `127.0.0.1`. The full source you can audit is right here in this repo — `bin/`, `lib/`, `web/`. The build command is one line in `package.json`: `npm run build`.
+
+### How to verify the .exe matches what you see in this repo
+
+Each release lists a SHA-256 hash. Verify before running:
+
+```powershell
+Get-FileHash portman.exe -Algorithm SHA256
+```
+
+Compare with the hash in the release notes:
+- [v0.5.0](https://github.com/al-nemirov/portman/releases/tag/v0.5.0): `840f8a3c8b066337916dc44adccd248f8e9db65e506170bf06c107f07de01bbd`
+- [v0.4.0](https://github.com/al-nemirov/portman/releases/tag/v0.4.0): `68687ec2f9bce2bbf28b144d1411b90a59cfee0db5e609e98d21300b660a66d4`
+- [v0.3.1](https://github.com/al-nemirov/portman/releases/tag/v0.3.1): `659bdc33ace119bf9b147e233ffba56ea9076d5b1589293bbb222eb984aa2bf1`
+
+### Or: build it yourself
+
+```powershell
+git clone https://github.com/al-nemirov/portman.git
+cd portman
+npm install
+npm run build
+.\dist\portman.exe ui
+```
+Now you know exactly what's inside.
+
+### When will the warning go away?
+
+- After ~1000–10000 downloads with no malware reports, SmartScreen builds reputation for the file hash and stops warning automatically.
+- Or when this project gets accepted into [SignPath.io Foundation](https://about.signpath.io/foundation/) — free EV code signing for OSS projects with proven traction.
 
 ## License
 

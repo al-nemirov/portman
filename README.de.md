@@ -240,6 +240,18 @@ Plain JSON. Sicher per Hand zu bearbeiten. Ordner löschen zum Zurücksetzen.
 
 ---
 
+## Über die SmartScreen-Warnung
+
+Die `portman.exe` ist (noch) nicht code-signiert — Code-Signing-Zertifikate kosten $300+/Jahr. Beim ersten Start zeigt Windows eine gelbe Warnung. Klicke **Weitere Informationen → Trotzdem ausführen**.
+
+Um zu prüfen, ob die Binary mit dem Quellcode in diesem Repo übereinstimmt:
+```powershell
+Get-FileHash portman.exe -Algorithm SHA256
+```
+Vergleiche mit dem Hash in den Release-Notes. Oder selbst bauen: `npm install && npm run build`.
+
+Vollständige Erklärung: [English README — SmartScreen FAQ](README.md#why-does-windows-warn-me-about-portmanexe).
+
 ## Lizenz
 
 [MIT](LICENSE) © Alexander Nemirov

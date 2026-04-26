@@ -229,6 +229,18 @@ portman run --label=mysite --port=3000 -- npm run dev
 
 ---
 
+## SmartScreen 경고에 대해
+
+`portman.exe`는 코드 서명이 되어있지 않습니다 (아직 — 코드 서명 인증서는 연 $300+). 처음 실행 시 Windows가 노란색 경고를 표시합니다. **자세히 → 실행**을 클릭하세요.
+
+바이너리가 이 저장소의 소스와 일치하는지 확인하려면:
+```powershell
+Get-FileHash portman.exe -Algorithm SHA256
+```
+릴리스 노트의 해시와 비교하세요. 또는 직접 빌드: `npm install && npm run build`.
+
+전체 설명: [English README — SmartScreen FAQ](README.md#why-does-windows-warn-me-about-portmanexe).
+
 ## 라이선스
 
 [MIT](LICENSE) © Alexander Nemirov

@@ -245,6 +245,18 @@ JSON simple. Seguro de editar a mano. Borra la carpeta para resetear.
 
 ---
 
+## Sobre la advertencia de SmartScreen
+
+`portman.exe` no está firmado con certificado de código (todavía — los certificados de Code Signing cuestan $300+/año). Al primer arranque Windows mostrará una advertencia amarilla. Haz clic en **Más información → Ejecutar de todos modos**.
+
+Para verificar que el binario coincide con el código fuente de este repositorio:
+```powershell
+Get-FileHash portman.exe -Algorithm SHA256
+```
+Compara con el hash en las notas del release. O compílalo tú mismo: `npm install && npm run build`.
+
+Explicación completa: [English README — SmartScreen FAQ](README.md#why-does-windows-warn-me-about-portmanexe).
+
 ## Licencia
 
 [MIT](LICENSE) © Alexander Nemirov
