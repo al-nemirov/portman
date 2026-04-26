@@ -1,6 +1,6 @@
 {
   "name": "portman",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Standalone Windows .exe with 80s synthwave UI to manage localhost dev servers — see what's listening, RAM/CPU per process, clickable URLs, filter/search/sort, auto-kill idle servers. Self-protected, system-process whitelist, one-click desktop launcher. UI in EN/KO/DE/ES.",
   "bin": {
     "portman": "bin/portman.js"
@@ -19,7 +19,7 @@
   },
   "pkg": {
     "scripts": ["bin/**/*.js", "lib/**/*.js"],
-    "assets": ["web/**/*", "logo.png", "favicon.png"],
+    "assets": ["web/**/*", "logo.png", "favicon.png", "portman-tray.ps1"],
     "outputPath": "dist"
   },
   "keywords": [

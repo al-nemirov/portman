@@ -218,6 +218,33 @@
   .hb.fail { background: var(--red); box-shadow: 0 0 6px var(--red); }
   .hms { font-size: 10px; color: var(--text-dim); }
 
+  /* Sparkline */
+  .spark { display: inline-block; vertical-align: middle; margin-left: 6px; opacity: 0.85; }
+  .spark path { fill: none; stroke-width: 1.2; }
+  .spark.ram path { stroke: var(--cyan); filter: drop-shadow(0 0 2px var(--cyan)); }
+  .spark.cpu path { stroke: var(--magenta); filter: drop-shadow(0 0 2px var(--magenta)); }
+
+  /* Tunnel link */
+  .tunnel {
+    display: inline-block; margin-left: 8px; font-size: 10px;
+    color: var(--magenta); text-shadow: 0 0 6px var(--magenta);
+    border: 1px dashed var(--magenta); padding: 1px 6px;
+    text-decoration: none; letter-spacing: 0.1em;
+  }
+  .tunnel:hover { background: rgba(255, 45, 181, 0.15); color: #fff; }
+
+  /* Tree-child indicator (ppid relationship) */
+  .child-marker { color: var(--text-dim); margin-right: 4px; font-size: 11px; }
+
+  /* Bookmark items */
+  #bookList .bk { padding: 8px 0; border-bottom: 1px dotted rgba(176, 38, 255, 0.3); }
+  #bookList .bk .top { display: flex; justify-content: space-between; align-items: center; }
+  #bookList .bk .top b { color: var(--magenta); text-shadow: 0 0 4px var(--magenta); }
+  #bookList .bk .meta { color: var(--text-dim); font-size: 10px; line-height: 1.4; word-break: break-all; }
+  #bookList .bk button { font-size: 10px; padding: 3px 8px; margin-left: 4px; }
+  #bookList .bk .launch { background: var(--phosphor-fade, rgba(0,240,255,0.2)); border-color: var(--cyan); color: var(--cyan); }
+  #bookList .bk .del { border-color: var(--red); color: var(--red); }
+
   /* Log entries */
   #logList .ev { padding: 6px 0; border-bottom: 1px dotted rgba(176, 38, 255, 0.2); }
   #logList .ev .t { color: var(--text-dim); font-size: 10px; }
@@ -407,9 +434,10 @@
       <option value="es">ES · Español</option>
     </select>
     <button class="auto-toggle" id="autoBtn"><span class="dot"></span><span id="autoLabel">AUTO · OFF</span></button>
-    <button class="cog" id="pingBtn" title="ping registered (h)">⚡</button>
+    <button class="cog" id="pingBtn" title="ping registered (p)">⚡</button>
+    <button class="cog" id="bookBtn" title="bookmarks (b)">★</button>
     <button class="cog" id="logBtn" title="event log (l)">≡</button>
-    <button class="cog" id="cogBtn" title="settings">⚙</button>
+    <button class="cog" id="cogBtn" title="settings (,)">⚙</button>
   </div>
 </header>
 
@@ -472,6 +500,30 @@
     <button class="auto-toggle" id="saveBtn" style="width:100%; justify-content:center">▸ SAVE</button>
   </div>
   <p class="help" id="drawerHelp"></p>
+</div>
+
+<div class="drawer" id="bookDrawer">
+  <h2>▎ BOOKMARKS</h2>
+  <div id="bookList" style="font-size:12px;"></div>
+  <h2 style="margin-top: 22px;">▎ ADD NEW</h2>
+  <label>LABEL</label>
+  <input type="text" id="bkLabel" placeholder="moandanang">
+  <label>CWD</label>
+  <input type="text" id="bkCwd" placeholder="C:\Project\moandanang">
+  <label>COMMAND</label>
+  <input type="text" id="bkCmd" placeholder="npm run dev">
+  <label>HINT PORT (optional)</label>
+  <input type="number" id="bkPort" placeholder="3000">
+  <div style="margin-top: 18px;">
+    <button class="auto-toggle" id="bkSave" style="width:100%; justify-content:center">▸ SAVE BOOKMARK</button>
+  </div>
+  <h2 style="margin-top: 28px;">▎ AUTOSTART</h2>
+  <p style="font-size:11px; color: var(--text-dim); margin: 0 0 12px;">Run portman silently when Windows logs in.</p>
+  <div style="display:flex; gap:8px;">
+    <button class="auto-toggle" id="autoInst" style="flex:1; justify-content:center">▸ INSTALL</button>
+    <button class="auto-toggle" id="autoUninst" style="flex:1; justify-content:center">▸ REMOVE</button>
+  </div>
+  <p id="autostartStatus" style="font-size:11px; color: var(--cyan); margin-top:10px;"></p>
 </div>
 
 <div class="drawer" id="logDrawer">
@@ -608,6 +660,18 @@ function statusOf(it) {
   return { cls:'listen', label:t.stListen };
 }
 
+// Inline-SVG sparkline. Принимает массив чисел, рисует path.
+function spark(data, cls, w = 60, h = 16) {
+  if (!data || data.length < 2) return '';
+  const max = Math.max(...data, 1);
+  const min = Math.min(...data, 0);
+  const range = (max - min) || 1;
+  const step = w / (data.length - 1);
+  const pts = data.map((v, i) => `${(i*step).toFixed(1)},${(h - ((v-min)/range)*h).toFixed(1)}`);
+  const d = 'M' + pts.join(' L');
+  return `<svg class="spark ${cls}" width="${w}" height="${h}"><path d="${d}"/></svg>`;
+}
+
 function fmtRam(mb) {
   if (mb == null) return '—';
   if (mb < 1024) return mb + ' MB';
@@ -678,22 +742,38 @@ async function refresh() {
     const healthDot = it.registered && healthMap[it.ports[0]]
       ? `<span class="hb ${esc(healthMap[it.ports[0]].level)}" title="HTTP ${healthMap[it.ports[0]].status} · ${healthMap[it.ports[0]].ms}ms"></span>`
       : '';
+    const ppid = it.ppid != null && it.ppid > 0 ? `<span class="child-marker" title="parent pid">↳${it.ppid}</span>` : '';
     const label = it.label
-      ? `${healthDot}${projTag}<span class="label">${esc(it.label)}</span><br><span class="pid">${esc(it.name)}</span>`
-      : `${projTag}${esc(it.name)}`;
+      ? `${healthDot}${projTag}<span class="label">${esc(it.label)}</span><br>${ppid}<span class="pid">${esc(it.name)}</span>`
+      : `${projTag}${ppid}${esc(it.name)}`;
+    // Тоннель кнопка/линк
+    const portForTunnel = it.ports.find(p => p >= 1024 && p <= 65535);
+    const tunnelHtml = it.tunnel
+      ? `<a class="tunnel" href="${esc(it.tunnel.url || '#')}" target="_blank" rel="noopener" title="${esc(it.tunnel.tool)}">${it.tunnel.url ? '🌐 OPEN' : '⏳ STARTING'}</a> <button class="btn-kill" data-tunstop="${it.tunnel.port}" style="font-size:9px; padding:2px 6px;">STOP</button>`
+      : (portForTunnel && !it.protected ? `<button class="btn-kill" data-tunstart="${portForTunnel}" style="border-color: var(--magenta); color: var(--magenta); font-size:9px; padding:2px 6px;">🌐 TUNNEL</button>` : '');
     return `<tr class="${rowClass(it)}">
       <td><span class="pid">${it.pid}</span></td>
       <td class="name" title="${esc(it.cmd||'')}\n${esc(it.cwd||'')}">${label}</td>
       <td>${urlsHtml}</td>
       <td class="num conn ${it.conn>0?'high':''}">${it.conn}</td>
-      <td class="num ram ${ramClass(it.ramMB)}">${fmtRam(it.ramMB)}</td>
-      <td class="num cpu ${(it.cpuPct||0) > 5 ? 'busy':''}">${fmtCpu(it.cpuPct)}</td>
+      <td class="num ram ${ramClass(it.ramMB)}">${fmtRam(it.ramMB)}${spark(it.ramHist, 'ram')}</td>
+      <td class="num cpu ${(it.cpuPct||0) > 5 ? 'busy':''}">${fmtCpu(it.cpuPct)}${spark(it.cpuHist, 'cpu')}</td>
       <td class="status ${st.cls}">${esc(st.label)}</td>
       <td class="meta">${it.ageMin!==null?it.ageMin+'m':'—'} · ${fmtIdle(it.idleSec)}</td>
-      <td class="act">${act}</td>
+      <td class="act">${act}${tunnelHtml}</td>
     </tr>`;
   }).join('');
   document.querySelectorAll('[data-kill]').forEach(b => b.onclick = (e) => { e.preventDefault(); tryKill(+b.dataset.kill); });
+  document.querySelectorAll('[data-tunstart]').forEach(b => b.onclick = async () => {
+    flash('TUNNEL starting...');
+    const r = await api('/api/tunnel/start', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ port: +b.dataset.tunstart }) });
+    flash(r.ok ? `TUNNEL ${r.tool} started` : `TUNNEL FAIL: ${r.error}`);
+    refresh();
+  });
+  document.querySelectorAll('[data-tunstop]').forEach(b => b.onclick = async () => {
+    await api('/api/tunnel/stop', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ port: +b.dataset.tunstop }) });
+    flash('TUNNEL stopped'); refresh();
+  });
 }
 
 async function tryKill(pid) {
@@ -771,6 +851,50 @@ async function showLog() {
 }
 $('logBtn').onclick = showLog;
 
+// Bookmarks drawer
+async function showBookmarks() {
+  $('drawer').classList.remove('open'); $('logDrawer').classList.remove('open');
+  const r = await api('/api/bookmarks');
+  $('bookList').innerHTML = (r.items || []).map(b => `
+    <div class="bk">
+      <div class="top"><b>${esc(b.label)}</b><div>
+        <button class="auto-toggle launch" data-launch="${esc(b.id)}">▸ LAUNCH</button>
+        <button class="auto-toggle del" data-bkdel="${esc(b.id)}">✕</button>
+      </div></div>
+      <div class="meta">${esc(b.cwd)}</div>
+      <div class="meta">$ ${esc(b.cmd)}${b.port ? ' · :'+b.port : ''}</div>
+    </div>`).join('') || '<div style="color: var(--text-dim); font-size:11px;">— no bookmarks yet —</div>';
+  document.querySelectorAll('[data-launch]').forEach(b => b.onclick = async () => {
+    flash('LAUNCH...');
+    const r = await api('/api/bookmarks/launch', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: b.dataset.launch }) });
+    flash(r.ok ? `LAUNCHED ${r.label}` : `FAIL: ${r.error}`);
+  });
+  document.querySelectorAll('[data-bkdel]').forEach(b => b.onclick = async () => {
+    await fetch('/api/bookmarks/' + encodeURIComponent(b.dataset.bkdel), { method:'DELETE' });
+    showBookmarks();
+  });
+  // Autostart status
+  const a = await api('/api/autostart');
+  $('autostartStatus').textContent = a.installed ? '✓ INSTALLED — runs at logon' : '✗ NOT INSTALLED';
+  $('bookDrawer').classList.toggle('open');
+}
+$('bookBtn').onclick = showBookmarks;
+$('bkSave').onclick = async () => {
+  const body = { label: $('bkLabel').value, cwd: $('bkCwd').value, cmd: $('bkCmd').value, port: $('bkPort').value || null };
+  const r = await api('/api/bookmarks', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  if (r.error) { flash('FAIL: ' + r.error); return; }
+  $('bkLabel').value = ''; $('bkCwd').value = ''; $('bkCmd').value = ''; $('bkPort').value = '';
+  flash('SAVED'); showBookmarks();
+};
+$('autoInst').onclick = async () => {
+  const r = await api('/api/autostart/install', { method:'POST' });
+  flash(r.ok ? 'AUTOSTART INSTALLED' : 'FAIL: ' + r.error); showBookmarks();
+};
+$('autoUninst').onclick = async () => {
+  const r = await api('/api/autostart/uninstall', { method:'POST' });
+  flash(r.ok ? 'AUTOSTART REMOVED' : 'FAIL: ' + r.error); showBookmarks();
+};
+
 // Keyboard shortcuts: / search, g auto, l log, p ping, 1-5 filters, ? help
 document.addEventListener('keydown', (e) => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') {
@@ -781,6 +905,7 @@ document.addEventListener('keydown', (e) => {
   else if (e.key === 'g') $('autoBtn').click();
   else if (e.key === 'l') $('logBtn').click();
   else if (e.key === 'p') $('pingBtn').click();
+  else if (e.key === 'b') $('bookBtn').click();
   else if (e.key === ',') $('cogBtn').click();
   else if (e.key >= '1' && e.key <= '5') {
     const order = ['all','dev','active','idle','prot'];
@@ -793,6 +918,7 @@ document.addEventListener('keydown', (e) => {
     $('modal').classList.remove('show');
     $('drawer').classList.remove('open');
     $('logDrawer').classList.remove('open');
+    $('bookDrawer').classList.remove('open');
   }
 });
 

@@ -20,6 +20,33 @@ switch (sub) {
   case 'kill': process.argv = [process.argv[0], 'devkill', ...rest]; require('./devkill.js'); break;
   case 'run':  process.argv = [process.argv[0], 'devrun',  ...rest]; require('./devrun.js');  break;
   case 'auto': process.argv = [process.argv[0], 'devauto', ...rest]; require('./devauto.js'); break;
+  case 'autostart-install': {
+    const r = require('../lib/autostart').install();
+    console.log(r.ok ? `[portman] autostart installed: ${r.target}` : `[portman] FAIL: ${r.error}`);
+    process.exit(r.ok ? 0 : 1);
+  }
+  case 'autostart-uninstall': {
+    const r = require('../lib/autostart').uninstall();
+    console.log(r.ok ? '[portman] autostart removed' : `[portman] FAIL: ${r.error}`);
+    process.exit(r.ok ? 0 : 1);
+  }
+  case 'autostart-status': {
+    const r = require('../lib/autostart').status();
+    console.log(r.installed ? '[portman] installed:\n' + r.info : '[portman] not installed');
+    process.exit(0);
+  }
+  case 'tray': {
+    const path = require('path');
+    const { spawn } = require('child_process');
+    const ps1 = path.join(__dirname, '..', 'portman-tray.ps1');
+    const port = parseInt((rest.find(a => a.startsWith('--port=')) || '').slice(7), 10) || 9876;
+    const child = spawn('powershell.exe',
+      ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-WindowStyle', 'Hidden', '-File', ps1, '-Port', String(port)],
+      { detached: true, stdio: 'ignore' });
+    child.unref();
+    console.log(`[portman] tray launched, talking to http://127.0.0.1:${port}`);
+    break;
+  }
   default:
     console.log(`portman — localhost port dispatcher
 
