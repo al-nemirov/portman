@@ -193,6 +193,37 @@
   .cpu { color: var(--text-dim); }
   .cpu.busy { color: var(--magenta); text-shadow: 0 0 6px var(--magenta); font-weight: bold; }
 
+  /* Project tag */
+  .proj {
+    display: inline-block; padding: 1px 7px; margin-right: 6px;
+    border: 1px solid var(--cyan); color: var(--cyan);
+    font-size: 10px; letter-spacing: 0.15em; vertical-align: middle;
+    text-shadow: 0 0 4px var(--cyan);
+  }
+  .proj.next     { border-color: #fff; color: #fff; }
+  .proj.vite     { border-color: #ffe14d; color: #ffe14d; text-shadow: 0 0 4px #ffe14d; }
+  .proj.astro    { border-color: var(--magenta); color: var(--magenta); text-shadow: 0 0 4px var(--magenta); }
+  .proj.express  { border-color: var(--purple); color: var(--purple); }
+  .proj.python   { border-color: #4dffe8; color: #4dffe8; text-shadow: 0 0 4px #4dffe8; }
+  .proj.go       { border-color: #00f0ff; color: #00f0ff; }
+  .proj.php      { border-color: #b59cff; color: #b59cff; }
+
+  /* Health badge */
+  .hb {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    margin-right: 6px; background: var(--text-dim); vertical-align: middle;
+  }
+  .hb.ok   { background: #4dff88; box-shadow: 0 0 6px #4dff88; }
+  .hb.warn { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); }
+  .hb.fail { background: var(--red); box-shadow: 0 0 6px var(--red); }
+  .hms { font-size: 10px; color: var(--text-dim); }
+
+  /* Log entries */
+  #logList .ev { padding: 6px 0; border-bottom: 1px dotted rgba(176, 38, 255, 0.2); }
+  #logList .ev .t { color: var(--text-dim); font-size: 10px; }
+  #logList .ev.auto-kill .type { color: var(--yellow); }
+  #logList .ev.manual-kill .type { color: var(--red); }
+
   /* Таблица */
   main {
     position: relative; z-index: 5;
@@ -376,6 +407,8 @@
       <option value="es">ES · Español</option>
     </select>
     <button class="auto-toggle" id="autoBtn"><span class="dot"></span><span id="autoLabel">AUTO · OFF</span></button>
+    <button class="cog" id="pingBtn" title="ping registered (h)">⚡</button>
+    <button class="cog" id="logBtn" title="event log (l)">≡</button>
     <button class="cog" id="cogBtn" title="settings">⚙</button>
   </div>
 </header>
@@ -439,6 +472,13 @@
     <button class="auto-toggle" id="saveBtn" style="width:100%; justify-content:center">▸ SAVE</button>
   </div>
   <p class="help" id="drawerHelp"></p>
+</div>
+
+<div class="drawer" id="logDrawer">
+  <h2>▎ EVENT LOG</h2>
+  <div id="logList" style="font-size:11px; line-height:1.7; color: var(--text); max-height: calc(100vh - 100px); overflow:auto;">
+    <div style="color: var(--text-dim);">— empty —</div>
+  </div>
 </div>
 
 <div class="modal-bg" id="modal">
@@ -527,6 +567,7 @@ let state = { settings: null, items: [] };
 let filter = localStorage.getItem('portman-filter') || 'all';
 let sortBy = localStorage.getItem('portman-sort') || 'auto';
 let search = '';
+let healthMap = {};
 
 function applyLang() {
   t = I18N[lang]; document.documentElement.lang = lang; $('lang').value = lang;
@@ -631,9 +672,15 @@ async function refresh() {
     const act = it.protected
       ? `<span class="locked-label">${esc(t.btnLocked)}</span>`
       : `<button class="btn-kill" data-kill="${it.pid}">${esc(t.btnKill)}</button>`;
+    const projTag = it.project
+      ? `<span class="proj ${esc(it.project.kind)}">${esc(it.project.label)}</span>`
+      : '';
+    const healthDot = it.registered && healthMap[it.ports[0]]
+      ? `<span class="hb ${esc(healthMap[it.ports[0]].level)}" title="HTTP ${healthMap[it.ports[0]].status} · ${healthMap[it.ports[0]].ms}ms"></span>`
+      : '';
     const label = it.label
-      ? `<span class="label">${esc(it.label)}</span><br><span class="pid">${esc(it.name)}</span>`
-      : esc(it.name);
+      ? `${healthDot}${projTag}<span class="label">${esc(it.label)}</span><br><span class="pid">${esc(it.name)}</span>`
+      : `${projTag}${esc(it.name)}`;
     return `<tr class="${rowClass(it)}">
       <td><span class="pid">${it.pid}</span></td>
       <td class="name" title="${esc(it.cmd||'')}\n${esc(it.cwd||'')}">${label}</td>
@@ -677,6 +724,7 @@ $('autoBtn').onclick = async () => {
   flash(next ? t.flashAutoOn : t.flashAutoOff); refresh();
 };
 $('cogBtn').onclick = () => {
+  $('logDrawer').classList.remove('open');
   const s = state.settings;
   $('idleMinutes').value = s.idleMinutes; $('portFrom').value = s.watchPortsFrom;
   $('portTo').value = s.watchPortsTo;
@@ -696,6 +744,57 @@ $('saveBtn').onclick = async () => {
 };
 $('mCancel').onclick = () => $('modal').classList.remove('show');
 $('lang').onchange = e => { lang = e.target.value; localStorage.setItem('portman-lang', lang); applyLang(); refresh(); };
+
+// PING: HTTP-проверка зарегистрированных серверов
+$('pingBtn').onclick = async () => {
+  flash('PING…');
+  const r = await api('/api/health', { method: 'POST' });
+  healthMap = r.health || {};
+  const ok = Object.values(healthMap).filter(h => h.level === 'ok').length;
+  const total = Object.keys(healthMap).length;
+  flash(`PING ${ok}/${total} OK`);
+  refresh();
+};
+
+// Event log drawer
+async function showLog() {
+  $('drawer').classList.remove('open');
+  const r = await api('/api/log');
+  const html = (r.events || []).map(ev => {
+    const time = new Date(ev.at).toLocaleTimeString();
+    const meta = `${ev.label||ev.name||''} · ${(ev.ports||[]).join(',')} · pid ${ev.pid}`;
+    const extra = ev.idleMin != null ? ` · idle ${ev.idleMin}m` : (ev.ok === false ? ' · FAIL' : '');
+    return `<div class="ev ${esc(ev.type)}"><span class="t">${time}</span> <span class="type">${esc(ev.type)}</span><br>${esc(meta)}${esc(extra)}</div>`;
+  }).join('') || '<div style="color: var(--text-dim);">— empty —</div>';
+  $('logList').innerHTML = html;
+  $('logDrawer').classList.toggle('open');
+}
+$('logBtn').onclick = showLog;
+
+// Keyboard shortcuts: / search, g auto, l log, p ping, 1-5 filters, ? help
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') {
+    if (e.key === 'Escape') e.target.blur();
+    return;
+  }
+  if (e.key === '/') { e.preventDefault(); $('search').focus(); }
+  else if (e.key === 'g') $('autoBtn').click();
+  else if (e.key === 'l') $('logBtn').click();
+  else if (e.key === 'p') $('pingBtn').click();
+  else if (e.key === ',') $('cogBtn').click();
+  else if (e.key >= '1' && e.key <= '5') {
+    const order = ['all','dev','active','idle','prot'];
+    const f = order[+e.key - 1]; if (f) { setActiveFilter(f); refresh(); }
+  }
+  else if (e.key === '?') {
+    flash('shortcuts: / search · g auto · p ping · l log · , settings · 1-5 filters');
+  }
+  else if (e.key === 'Escape') {
+    $('modal').classList.remove('show');
+    $('drawer').classList.remove('open');
+    $('logDrawer').classList.remove('open');
+  }
+});
 
 function setActiveFilter(f) {
   filter = f;
