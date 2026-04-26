@@ -1,0 +1,41 @@
+name: ✨ Feature request
+description: Suggest a new capability or improvement.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Pull requests are not accepted (see [CONTRIBUTING.md](https://github.com/al-nemirov/portman/blob/main/CONTRIBUTING.md)),
+        but feature ideas are very welcome and often implemented.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What's the problem?
+      description: What are you trying to do that's currently painful or impossible?
+      placeholder: I want portman to also kill processes by their parent (e.g. when npm spawns 5 child workers).
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: Sketch how you'd want this to work.
+      placeholder: A KILL TREE button that walks Win32_Process.ParentProcessId and terminates descendants too.
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: How important is this for you?
+      options:
+        - Nice to have
+        - Would help a lot
+        - Blocking my use of portman
+    validations:
+      required: true

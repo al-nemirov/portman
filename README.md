@@ -17,6 +17,19 @@
   One-click desktop launcher. UI in EN / KO / DE / ES.
 </p>
 
+<p align="center">
+  <a href="https://github.com/al-nemirov/portman/actions/workflows/release.yml"><img src="https://github.com/al-nemirov/portman/actions/workflows/release.yml/badge.svg" alt="Release"></a>
+  <a href="https://github.com/al-nemirov/portman/releases/latest"><img src="https://img.shields.io/github/v/release/al-nemirov/portman?label=latest&color=ff2db5" alt="Latest"></a>
+  <a href="https://github.com/al-nemirov/portman/releases"><img src="https://img.shields.io/github/downloads/al-nemirov/portman/total?color=00f0ff" alt="Downloads"></a>
+  <img src="https://img.shields.io/badge/platform-Windows-0a84ff" alt="Platform">
+  <img src="https://img.shields.io/badge/node-%3E%3D18-339933" alt="Node">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License"></a>
+</p>
+
+<p align="center">
+  <img src="docs/screenshot.png" alt="PORTMAN UI screenshot" width="900">
+</p>
+
 [![Platform](https://img.shields.io/badge/platform-Windows-0a84ff)](https://github.com/al-nemirov/portman)
 [![Node](https://img.shields.io/badge/node-%3E%3D18-339933)](https://nodejs.org)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)

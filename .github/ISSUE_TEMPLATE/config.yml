@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: SmartScreen / unsigned binary warning
+    url: https://github.com/al-nemirov/portman#why-does-windows-warn-me-about-portmanexe
+    about: Common question — Windows shows a warning when you run portman.exe. See the FAQ before opening an issue.
+  - name: Want to contribute code?
+    url: https://github.com/al-nemirov/portman/blob/main/CONTRIBUTING.md
+    about: Pull requests are not accepted. Please open an issue with your idea instead, or fork freely under MIT.

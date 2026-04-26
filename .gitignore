@@ -1,6 +1,9 @@
 node_modules/
 dist/
 package-lock.json
+/ScreenShot*.png
+/screenshot*.png
+.release.json
 .DS_Store
 Thumbs.db
 .vscode/

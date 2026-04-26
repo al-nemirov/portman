@@ -1,0 +1,78 @@
+name: 🐛 Bug report
+description: Something is broken or behaves unexpectedly.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. The more detail you provide, the faster it gets fixed.
+
+  - type: input
+    id: version
+    attributes:
+      label: portman version
+      description: Visible at the bottom of the UI, or run `portman --version`.
+      placeholder: "v0.5.1"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: install
+    attributes:
+      label: How did you install it?
+      options:
+        - Standalone .exe from Releases
+        - Built from source (npm run build)
+        - Cloned and ran via node bin/portman.js
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Windows version
+      placeholder: "Windows 11 24H2 / Windows 10 22H2"
+    validations:
+      required: true
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: Plain language. What did you see?
+      placeholder: I clicked KILL on a Vite dev server and the row disappeared but `node.exe` is still in Task Manager.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+      placeholder: The process should be terminated entirely.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Run `npm run dev` in some Vite project
+        2. Open portman UI
+        3. Click ▸ KILL on the row
+        4. Check Task Manager → process still there
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / console output
+      description: Press F12 in the browser → Console tab. Or paste what `portman.exe ui` prints to the terminal.
+      render: shell
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Confirm
+      options:
+        - label: I checked the [SmartScreen FAQ](https://github.com/al-nemirov/portman#why-does-windows-warn-me-about-portmanexe) and existing issues.
+          required: true
