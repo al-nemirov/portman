@@ -1,7 +1,7 @@
 {
   "name": "portman",
-  "version": "0.2.0",
-  "description": "Retro CRT-styled Windows dispatcher for localhost dev servers — see what's listening, what's idle, kill duplicates, auto-clean stale dev servers. One-click desktop launcher.",
+  "version": "0.3.1",
+  "description": "Standalone Windows .exe with 80s synthwave UI to manage localhost dev servers — see what's listening, RAM/CPU per process, clickable URLs, filter/search/sort, auto-kill idle servers. Self-protected, system-process whitelist, one-click desktop launcher. UI in EN/KO/DE/ES.",
   "bin": {
     "portman": "bin/portman.js"
   },
