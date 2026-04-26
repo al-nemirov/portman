@@ -109,6 +109,17 @@ npm install        # installs @yao-pkg/pkg as devDep
 npm run build      # → dist/portman.exe (~41 MB, single file, no Node needed)
 ```
 
+### Release workflow (CI)
+Tagging a commit `vX.Y.Z` triggers [`.github/workflows/release.yml`](.github/workflows/release.yml)
+which builds `portman.exe` on a clean GitHub-hosted `windows-latest` runner, computes its
+SHA-256, and creates the GitHub Release with the binary attached and verification instructions
+in the body. Maintainer runs:
+```powershell
+git tag v0.5.1
+git push origin v0.5.1
+```
+That's the entire release process.
+
 ---
 
 ## Run

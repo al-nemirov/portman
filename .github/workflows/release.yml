@@ -1,0 +1,68 @@
+name: Release
+
+# Триггер: пуш тега вида v0.5.1, v1.0.0 и т.п.
+# Локально:  git tag v0.5.1 && git push origin v0.5.1
+# GitHub соберёт portman.exe и создаст Release автоматически.
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write   # нужно для создания Release и загрузки ассетов
+
+jobs:
+  build:
+    name: Build portman.exe (Windows x64)
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install build deps
+        run: npm install --no-audit --no-fund
+
+      - name: Build single .exe
+        run: npm run build
+
+      - name: Compute SHA-256
+        id: hash
+        shell: pwsh
+        run: |
+          $h = (Get-FileHash dist/portman.exe -Algorithm SHA256).Hash.ToLower()
+          $size = (Get-Item dist/portman.exe).Length
+          echo "sha256=$h" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          echo "size=$size" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "SHA-256: $h"
+          Write-Host "Size: $size bytes"
+
+      - name: Create / update Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: dist/portman.exe
+          append_body: true
+          body: |
+
+            ---
+
+            ## Verify the binary
+
+            ```powershell
+            Get-FileHash portman.exe -Algorithm SHA256
+            # Expected:
+            # ${{ steps.hash.outputs.sha256 }}
+            ```
+
+            Size: ${{ steps.hash.outputs.size }} bytes.
+
+            Built automatically by [GitHub Actions](https://github.com/al-nemirov/portman/actions/runs/${{ github.run_id }}) on `windows-latest`. The binary is reproducible from this commit: `${{ github.sha }}`.
